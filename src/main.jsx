@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 // Pages
-import Home from './pages/Home.jsx'
+// import Home from './pages/Home.jsx'
 import Chat from "./pages/Chat.jsx"
 
 // Css
