@@ -2,9 +2,10 @@ import React from 'react'
 
 function ChatHeader() {
   return (
-    <ChatHeader className='text-center font-medium text-amber-100 bg-slate-900'>
+    <div className='text-center font-medium text-amber-100 bg-slate-900'>
         <p>Server: Global</p>
-    </ChatHeader>
+        <p>My UserId: userId</p>
+    </div>
   )
 }
 
