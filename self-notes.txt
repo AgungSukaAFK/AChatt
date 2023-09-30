@@ -1,0 +1,8 @@
+# Bikin fitur login
+1. Buat halaman form login 
+2. userid 123 password rahasia
+3. response telah login, dan session terbuat
+4. munculin di dashboard
+
+# dashboard
+1. Munculin username, userid, status, photoIndex
