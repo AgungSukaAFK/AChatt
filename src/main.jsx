@@ -12,12 +12,17 @@ import './index.css'
 import NotFound from './pages/NotFound.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
+import Dashboard from './pages/Dashboard.jsx'
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
     errorElement: <NotFound />
+  },
+  {
+    path: "/Dashboard",
+    element: <Dashboard />
   },
   {
     path: "/chat",
