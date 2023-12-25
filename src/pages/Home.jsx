@@ -12,7 +12,7 @@ function Home() {
 
   function signupHandler(){
     showLoading()
-    window.location.href = "/create"
+    window.location.href = "/register"
   }
 
   function showLoading(){

@@ -100,21 +100,21 @@ function ChatLayout() {
   });
 
   return (
-    <div className='w-full h-screen relative text-base bg-slate-800 mx-auto md:max-w-3xl lg:max-w-4xl lg:text-lg overflow-y-scroll chat-container'>
+    <div className='w-full h-screen relative text-base bg-[#272a49] mx-auto md:max-w-3xl lg:max-w-4xl lg:text-lg overflow-y-scroll chat-container'>
       <LoadingScreen classAdd={"md:max-w-3xl lg:max-w-4xl"}/>
       {isiChat? 
       <div>
         <ChatHeader userId={userId || null}/>
         <div className="flex flex-col items-start text-white w-full p-2 my-12">
             {isiChat.map( (item, index) => {
-              if (item.from === userId && index !== 0) {
-                return <MyChat key={index} chat={item.chat} from={item.from} />;
-              } else if (item.from !== userId && index !== 0) {
-                return <OtherChat key={index} chat={item.chat} from={item.from} />;
-              } else {
-                return null;
+                if (item.from === userId && index !== 0) {
+                  return <MyChat key={index} chat={item.chat} from={item.from} />;
+                } else if (item.from !== userId && index !== 0) {
+                  return <OtherChat key={index} chat={item.chat} from={item.from} />;
+                } else {
+                  return null;
+                }
               }
-            }
             )}
         </div>
         <ChatFooter userId={userId || null} />

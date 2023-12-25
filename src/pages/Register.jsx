@@ -24,7 +24,7 @@ function Register() {
             alert("UserId tidak boleh kosong")
         } else if(!input.username){
             alert("Username tidak boleh kosong")
-        } else if(!input.passowrd){
+        } else if(!input.password){
             alert("Password tidak boleh kosong")
         } else {
             axios.post(`${api}/user/create`, inputJson, {
@@ -64,10 +64,10 @@ function Register() {
         <h1 className='text-2xl text-slate-700 font-mono font-bold border-b-4 border-slate-600 w-fit mx-auto px-4 mb-4'>Create account</h1>
             <label htmlFor="userId" className='input-label'>User Id</label>
             <input type="text" name='userId' className='input-input' placeholder='MyUserId'/>
-            <label htmlFor="username" className='input-label'>username</label>
+            <label htmlFor="username" className='input-label'>Username</label>
             <input type="text" name='username' className='input-input' placeholder='MyUsername'/>
-            <label htmlFor="password" className='input-label'>username</label>
-            <input type="text" name='password' className='input-input' placeholder='*****'/>
+            <label htmlFor="password" className='input-label'>Password</label>
+            <input type="password" name='password' className='input-input' placeholder='*****'/>
             <button className='submit-btn' onClick={submitHandler}>Register</button>
             <span className='input-label text-blue-900/80 text-center cursor-pointer drop-shadow-none transition duration-100 hover:text-slate-900/80 hover:drop-shadow-md hover:underline' onClick={() => directHandler("/login")}>Log in an account</span>
         </form>
