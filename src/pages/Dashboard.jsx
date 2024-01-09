@@ -3,70 +3,100 @@ import Achatt from "../components/Element/Achatt";
 import ChatCard from "../components/Element/ChatCard";
 import LoadingScreen from "../components/Fragment/LoadingScreen";
 import axios from "axios";
+import api from "../utils/api";
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
   const [dataCardArray, setDataCardArray] = useState([]);
-
-  let userId;
-  let userIdCookie;
-  if (document.cookie) {
-    userIdCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("userId="));
-    userId = userIdCookie.split("=")[1];
-  }
+  const [trigger, setTrigger] = useState(false);
+  // const api = "https://c218-103-140-130-53.ngrok-free.app";
+  useEffect(() => {
+    async function cek() {
+      await axios.get(api, {
+        ithCredentials: true,
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+    }
+    cek();
+    setTrigger((prev) => !prev);
+  }, []);
 
   useEffect(() => {
-    if (userIdCookie) {
-      setIsLoading(false);
-    } else {
-      setTimeout(() => {
-        window.location.href = "/nologin";
-      }, 3000);
-    }
-  }, []);
+    axios
+      .get(`${api}/user/myid`, {
+        withCredentials: true,
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      })
+      .then((res) => {
+        let { data } = res;
+        if (data.code == 2) {
+          setTimeout(() => {
+            window.location.href = "/nologin";
+          }, 2000);
+        } else if (data.code == 1) {
+          setUserId(data.userId);
+          setIsLoading(false);
+        }
+      });
+  }, [trigger]);
 
   // Mengambil data buat chatCard nya
   useEffect(() => {
     const fetchData = async () => {
+      setTimeout(() => {
+        console.log("Haiya");
+      }, 1000);
       try {
-        const response = await axios.get(
-          "http://localhost:4000/user/allgroups",
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${api}/user/allgroups`, {
+          withCredentials: true,
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        });
 
         let groupNames = JSON.stringify(response.data.data);
         let groupNameArr = JSON.parse(groupNames);
 
         const requests = groupNameArr.map(async (item) => {
           const res = await axios.post(
-            "http://localhost:4000/chat/",
+            `${api}/chat/`,
             {
               purpose: "GETLAST",
               chatAddress: item,
             },
             {
               withCredentials: true,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "ngrok-skip-browser-warning": "69420",
+              },
             }
           );
 
           let { lastChat } = res.data;
 
+          let groupName = item;
+          let names = groupName.split("&");
+          let str1 = names[0];
+          let title =
+            str1.toLowerCase() == userId.toLowerCase() ? names[1] : names[0];
+          let index = await getPhotoIndex(title);
+
           return {
-            cardTitle: item,
-            cardSender: lastChat ? lastChat.from : null,
-            cardLastChat: lastChat ? lastChat.chat : null,
+            cardTitle: title,
+            cardSender: lastChat ? lastChat.from : " - ",
+            cardLastChat: lastChat ? lastChat.chat : "Belum ada chat ...",
+            groupName: item,
+            photoIndex: index,
           };
         });
 
         const updatedDataCardArray = await Promise.all(requests);
+
         setDataCardArray(updatedDataCardArray);
         setIsLoading(false);
       } catch (error) {
@@ -76,7 +106,7 @@ function Dashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [userId, trigger]);
 
   function logoHandler() {
     let { pathname } = window.location;
@@ -90,10 +120,19 @@ function Dashboard() {
   function cardHandler(e) {
     let groupName = e.target
       .closest(".card-container")
-      .querySelector(".card-title").innerHTML;
-
-    // window.location.href = `/beta?a=${encodeURIComponent(groupName)}`;
-    window.location.href = `/beta?a=${groupName.replace(/&/g, "_")}`;
+      .querySelector(".card-title")
+      .getAttribute("value");
+    if (groupName.includes("&")) {
+      let names = groupName.split("&");
+      let title = names[0] == userId ? names[1] : names[0];
+      window.location.href = `/beta?a=${groupName.replace(
+        /&/g,
+        "_"
+      )}&title=${title}`;
+    } else {
+      window.location.href = `/beta?a=${groupName}`;
+    }
+    // window.location.href = `/beta?a=${groupName}`;
 
     // alert(`sender: ${e}`);
     // console.log(groupName);
@@ -101,18 +140,81 @@ function Dashboard() {
 
   function logoutHandler() {
     axios
-      .get("http://localhost:4000/user/logout", {
-        withCredentials: true,
+      .get(`${api}/user/logout`, {
         headers: {
-          "Content-Type": "applicaiton/json",
+          "ngrok-skip-browser-warning": "69420",
         },
+        withCredentials: true,
       })
       .then((data) => {
-        alert("Telah logout: " + data.data);
+        alert("Telah logout: " + JSON.stringify(data.data));
         window.location.href = "/";
       });
   }
 
+  async function plusHandler() {
+    let userIdPrompt = prompt("Masukkan user ID tujuan: ");
+    if (userIdPrompt) {
+      if (userIdPrompt == userId) {
+        alert("Nggak bisa nambahin diri sendiri :)");
+        return;
+      }
+      let input = {
+        userId: userId,
+        userId2: userIdPrompt,
+      };
+      let response = await axios.post(`${api}/group/conversation`, input, {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+        withCredentials: true,
+      });
+      let { code, message } = response.data;
+      if (code == 1) {
+        alert("Berhasil tambah chat!");
+        setTrigger((prev) => !prev);
+      } else {
+        alert(`Something wrong: ${message}`);
+      }
+    } else {
+      return;
+    }
+  }
+
+  function profileHandler() {
+    window.location.href = "/dashboard/profile";
+  }
+
+  async function getPhotoIndex(title) {
+    let index = "global";
+
+    if (title !== "global") {
+      try {
+        const response = await axios.post(
+          `${api}/user/photo`,
+          { userId: title },
+          {
+            withCredentials: true,
+            headers: {
+              "ngrok-skip-browser-warning": "69420",
+            },
+          }
+        );
+
+        index = response.data.photoIndex.photoIndex;
+        console.log(index);
+        console.log(typeof index);
+      } catch (error) {
+        console.error("Error fetching photo index:", error);
+        // Handle the error as needed
+      }
+    }
+
+    return index;
+  }
+
+  // return <div>hq</div>;
+  // /*
   return (
     <div>
       {isLoading ? (
@@ -125,6 +227,7 @@ function Dashboard() {
           </span>
         </div>
       ) : (
+        // pembatas loading disini :)
         <div className="flex flex-col bg-[#FAF9FF] h-screen w-screen box-border">
           <div className="navbar flex flex-row items-center px-4 bg-[#0D2646] h-16 box-border border-b-8 border-teal-600">
             <div
@@ -155,38 +258,66 @@ function Dashboard() {
             </div>
           </div>
           <div className="main box-border h-full p-4 bg-quietLight overflow-auto">
-            <h1 className="mb-4">Dashboard &gt;</h1>
+            <div className="w-full mb-4 flex flex-row">
+              <h1 className="flex-1">Dashboard &gt;</h1>
+              <h1
+                className="mr-8 brightness-100 font-bold hover:brightness-75 hover:cursor-pointer transition duration-200"
+                onClick={profileHandler}
+              >
+                ☝️🤓My profile
+              </h1>
+            </div>
             <div className="chatList flex flex-col gap-2">
               {/* Cards */}
               {dataCardArray.map((item, index) => {
-                let { cardTitle, cardSender, cardLastChat } = item;
+                let {
+                  cardTitle,
+                  cardSender,
+                  cardLastChat,
+                  groupName,
+                  photoIndex,
+                } = item;
 
                 return (
                   <ChatCard
                     cardTitle={cardTitle}
                     cardSender={cardSender}
                     cardLastChat={cardLastChat}
+                    photoIndex={photoIndex}
                     onClickHandler={cardHandler}
                     key={index}
+                    value={groupName}
                   />
                 );
               })}
-              {/* // <ChatCard
-              //   cardTitle={"global"}
-              //   cardSender={"Agung Tampar"}
-              //   cardLastChat={
-              //     "Halo mau makan apa guys lorem ipsum dolor sit amet adipasicing elit."
-              //   }
-              //   onClickHandler={cardHandler}
-              // /> */}
 
               {/* End cards */}
+            </div>
+            <div
+              onClick={plusHandler}
+              className="addButton w-fit h-fit fixed bottom-10 right-5 brightness-100 drop-shadow-sm hover:drop-shadow-lg hover:brightness-75 hover:cursor-pointer transition duration-200"
+            >
+              <svg
+                className="w-16"
+                viewBox="0 0 24 24"
+                fill="green"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="24" height="24" fill="none" />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M13 9C13 8.44772 12.5523 8 12 8C11.4477 8 11 8.44772 11 9V11H9C8.44772 11 8 11.4477 8 12C8 12.5523 8.44772 13 9 13H11V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V13H15C15.5523 13 16 12.5523 16 12C16 11.4477 15.5523 11 15 11H13V9ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z"
+                  fill="#323232"
+                />
+              </svg>
             </div>
           </div>
         </div>
       )}
     </div>
   );
+  // */
 }
 
 export default Dashboard;

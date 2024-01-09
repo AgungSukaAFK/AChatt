@@ -1,10 +1,30 @@
 import React from "react";
 import axios from "axios";
 import { useEffect } from "react";
+import api from "../utils/api";
 
 function Login() {
-  const api = "http://localhost:4000";
-  // const api = "https://chat-api-agung.vercel.app";
+  // const api = "http://localhost:4000";
+  // const api = "https://b808-114-79-6-41.ngrok-free.app";
+
+  useEffect(() => {
+    async function cek() {
+      await axios.get(api);
+    }
+    cek();
+  }, []);
+
+  function getAllCookies() {
+    const cookies = document.cookie.split("; ");
+    const allCookie = {};
+
+    cookies.forEach((cookie) => {
+      const [name, value] = cookie.split("=");
+      allCookie[name] = value;
+    });
+
+    return allCookie;
+  }
 
   async function submitHandler(e) {
     let userId = document.querySelector("input[name='userId']").value;
@@ -42,9 +62,16 @@ function Login() {
           let { code, message } = response.data;
           // console.log(`dari response: ${message}`);
           if (code == 1) {
+            // window.location.href = "/dashboard/profile";
+            // alert("okay");
             window.location.href = "/dashboard";
           } else if (code == 2) {
             alert("Something wrong: " + message);
+          } else if (code == 3) {
+            alert(
+              `Terdeteksi: ${message}\nTekan oke akan dialihkan ke halaman dashboard`
+            );
+            window.location.href = "/dashboard";
           } else {
             alert(`Error login: ${message}`);
             return;
